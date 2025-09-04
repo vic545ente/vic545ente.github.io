@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráficos de Encuesta por Pregunta</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1, h2 {
+            font-weight: 700;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            height: 400px;
+            margin-bottom: 2rem;
+        }
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+            z-index: 10;
+        }
+        .tooltip.visible {
+            opacity: 1;
+        }
+        .select-container {
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="container">
+        <div class="card">
+            <h1 class="text-3xl mb-6 text-center">Datos de Encuesta por Pregunta</h1>
+
+            <div class="select-container">
+                <label for="question-select" class="block text-lg font-medium mb-2">Selecciona una pregunta:</label>
+                <select id="question-select" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <!-- Options will be populated by JS -->
+                </select>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="pie-chart"></canvas>
+            </div>
+            <div id="tooltip" class="tooltip"></div>
+
+            <h2 class="text-2xl mb-4 mt-6">Resumen de Datos</h2>
+            <div class="overflow-x-auto w-full">
+                <table class="min-w-full bg-white rounded-lg shadow-md">
+                    <thead>
+                        <tr class="bg-blue-500 text-white">
+                            <th class="py-3 px-4 text-left font-semibold">Pregunta</th>
+                            <th class="py-3 px-4 text-left font-semibold">3°C (24)</th>
+                            <th class="py-3 px-4 text-left font-semibold">4°C (26)</th>
+                            <th class="py-3 px-4 text-left font-semibold">Total (50)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="data-table-body">
+                        <!-- Table rows will be populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const allData = [
+            { question: "¿Duermes al menos 8 horas al día?", class3c: 6, class4c: 7 },
+            { question: "¿Comes 3 comidas al día?", class3c: 13, class4c: 12 },
+            { question: "¿Comes comida saludable al menos 3 veces por semana?", class3c: 8, class4c: 5 },
+            { question: "¿Pasas más de 5 horas viendo pantallas?", class3c: 9, class4c: 20 },
+            { question: "¿Haces actividad física al menos 2 días a la semana?", class3c: 6, class4c: 11 },
+            { question: "¿Comes desayuno todos los días?", class3c: 7, class4c: 9 },
+            { question: "¿Bebes 2 litros de agua al día?", class3c: 8, class4c: 8 },
+            { question: "¿Evitas ver pantallas antes de dormir?", class3c: 3, class4c: 1 },
+            { question: "Comes incluso si no tienes hambre?", class3c: 8, class4c: 7 },
+            { question: "Tomas siestas de más de 1 hora?", class3c: 8, class4c: 14 }
+        ];
+
+        const total3c = 24;
+        const total4c = 26;
+        const totalCombined = total3c + total4c;
+
+        const canvas = document.getElementById('pie-chart');
+        const ctx = canvas.getContext('2d');
+        const tooltip = document.getElementById('tooltip');
+        const selectElement = document.getElementById('question-select');
+        const tableBody = document.getElementById('data-table-body');
+
+        function populateSelectAndTable() {
+            allData.forEach((data, index) => {
+                // Populate select
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = data.question;
+                selectElement.appendChild(option);
+
+                // Populate table
+                const row = document.createElement('tr');
+                row.className = 'border-b last:border-0';
+                row.innerHTML = `
+                    <td class="py-3 px-4">${data.question}</td>
+                    <td class="py-3 px-4">${data.class3c}</td>
+                    <td class="py-3 px-4">${data.class4c}</td>
+                    <td class="py-3 px-4">${data.class3c + data.class4c}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function drawPieChart(data, total) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(centerX, centerY) - 20;
+
+            const positiveValue = data.class3c + data.class4c;
+            const negativeValue = total - positiveValue;
+            const values = [positiveValue, negativeValue];
+            const colors = ['#3b82f6', '#d1d5db']; // Blue for 'yes', Gray for 'no'
+
+            let lastAngle = 0;
+            values.forEach((value, i) => {
+                const sliceAngle = (value / total) * 2 * Math.PI;
+                ctx.fillStyle = colors[i];
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, lastAngle, lastAngle + sliceAngle);
+                ctx.closePath();
+                ctx.fill();
+                lastAngle += sliceAngle;
+            });
+            return values;
+        }
+
+        function handleMouseMove(e, values) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(centerX, centerY) - 20;
+            const dx = x - centerX;
+            const dy = y - centerY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            let angle = Math.atan2(dy, dx);
+            if (angle < 0) angle += 2 * Math.PI;
+
+            if (dist <= radius) {
+                let currentAngle = 0;
+                let foundSlice = false;
+                for (let i = 0; i < values.length; i++) {
+                    const sliceAngle = (values[i] / totalCombined) * 2 * Math.PI;
+                    currentAngle += sliceAngle;
+                    if (angle <= currentAngle) {
+                        const label = i === 0 ? 'Sí' : 'No';
+                        tooltip.innerHTML = `
+                            <div class="font-bold">${label}</div>
+                            <div>${values[i]} de ${totalCombined} (${(values[i] / totalCombined * 100).toFixed(1)}%)</div>
+                        `;
+                        tooltip.style.left = `${e.clientX + 10}px`;
+                        tooltip.style.top = `${e.clientY + 10}px`;
+                        tooltip.classList.add('visible');
+                        foundSlice = true;
+                        break;
+                    }
+                }
+                if (!foundSlice) {
+                    tooltip.classList.remove('visible');
+                }
+            } else {
+                tooltip.classList.remove('visible');
+            }
+        }
+
+        function handleMouseOut() {
+            tooltip.classList.remove('visible');
+        }
+
+        function handleSelectionChange() {
+            const selectedIndex = selectElement.value;
+            if (selectedIndex !== '') {
+                const selectedData = allData[selectedIndex];
+                const values = drawPieChart(selectedData, totalCombined);
+                canvas.onmousemove = (e) => handleMouseMove(e, values);
+                canvas.onmouseout = handleMouseOut;
+            } else {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                canvas.onmousemove = null;
+                canvas.onmouseout = null;
+            }
+        }
+
+        window.addEventListener('load', () => {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            populateSelectAndTable();
+            selectElement.addEventListener('change', handleSelectionChange);
+            handleSelectionChange(); // Draw initial chart
+        });
+
+        window.addEventListener('resize', () => {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            handleSelectionChange();
+        });
+
+    </script>
+</body>
+</html>
+
