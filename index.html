@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gráficos de Encuesta por Pregunta</title>
+    <title>Survey Data by Question</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -59,10 +59,10 @@
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
     <div class="container">
         <div class="card">
-            <h1 class="text-3xl mb-6 text-center">Datos de Encuesta por Pregunta</h1>
+            <h1 class="text-3xl mb-6 text-center">Survey Data by Question</h1>
 
             <div class="select-container">
-                <label for="question-select" class="block text-lg font-medium mb-2">Selecciona una pregunta:</label>
+                <label for="question-select" class="block text-lg font-medium mb-2">Select a question:</label>
                 <select id="question-select" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     <!-- Options will be populated by JS -->
                 </select>
@@ -73,12 +73,12 @@
             </div>
             <div id="tooltip" class="tooltip"></div>
 
-            <h2 class="text-2xl mb-4 mt-6">Resumen de Datos</h2>
+            <h2 class="text-2xl mb-4 mt-6">Data Summary</h2>
             <div class="overflow-x-auto w-full">
                 <table class="min-w-full bg-white rounded-lg shadow-md">
                     <thead>
                         <tr class="bg-blue-500 text-white">
-                            <th class="py-3 px-4 text-left font-semibold">Pregunta</th>
+                            <th class="py-3 px-4 text-left font-semibold">Question</th>
                             <th class="py-3 px-4 text-left font-semibold">3°C (24)</th>
                             <th class="py-3 px-4 text-left font-semibold">4°C (26)</th>
                             <th class="py-3 px-4 text-left font-semibold">Total (50)</th>
@@ -95,16 +95,16 @@
 
     <script>
         const allData = [
-            { question: "¿Duermes al menos 8 horas al día?", class3c: 6, class4c: 7 },
-            { question: "¿Comes 3 comidas al día?", class3c: 13, class4c: 12 },
-            { question: "¿Comes comida saludable al menos 3 veces por semana?", class3c: 8, class4c: 5 },
-            { question: "¿Pasas más de 5 horas viendo pantallas?", class3c: 9, class4c: 20 },
-            { question: "¿Haces actividad física al menos 2 días a la semana?", class3c: 6, class4c: 11 },
-            { question: "¿Comes desayuno todos los días?", class3c: 7, class4c: 9 },
-            { question: "¿Bebes 2 litros de agua al día?", class3c: 8, class4c: 8 },
-            { question: "¿Evitas ver pantallas antes de dormir?", class3c: 3, class4c: 1 },
-            { question: "Comes incluso si no tienes hambre?", class3c: 8, class4c: 7 },
-            { question: "Tomas siestas de más de 1 hora?", class3c: 8, class4c: 14 }
+            { question: "Do you sleep at least 8 hours a day?", class3c: 6, class4c: 7 },
+            { question: "Do you eat 3 meals a day?", class3c: 13, class4c: 12 },
+            { question: "Do you eat healthy food at least 3 times a week?", class3c: 8, class4c: 5 },
+            { question: "Do you spend more than 5 hours looking at screens?", class3c: 9, class4c: 20 },
+            { question: "Do you exercise at least 2 days a week?", class3c: 6, class4c: 11 },
+            { question: "Do you eat breakfast every day?", class3c: 7, class4c: 9 },
+            { question: "Do you drink 2 liters of water a day?", class3c: 8, class4c: 8 },
+            { question: "Do you avoid screens before sleeping?", class3c: 3, class4c: 1 },
+            { question: "Do you eat even if you are not hungry?", class3c: 8, class4c: 7 },
+            { question: "Do you take naps longer than 1 hour?", class3c: 8, class4c: 14 }
         ];
 
         const total3c = 24;
@@ -185,10 +185,10 @@
                     const sliceAngle = (values[i] / totalCombined) * 2 * Math.PI;
                     currentAngle += sliceAngle;
                     if (angle <= currentAngle) {
-                        const label = i === 0 ? 'Sí' : 'No';
+                        const label = i === 0 ? 'Yes' : 'No';
                         tooltip.innerHTML = `
                             <div class="font-bold">${label}</div>
-                            <div>${values[i]} de ${totalCombined} (${(values[i] / totalCombined * 100).toFixed(1)}%)</div>
+                            <div>${values[i]} of ${totalCombined} (${(values[i] / totalCombined * 100).toFixed(1)}%)</div>
                         `;
                         tooltip.style.left = `${e.clientX + 10}px`;
                         tooltip.style.top = `${e.clientY + 10}px`;
@@ -240,4 +240,3 @@
     </script>
 </body>
 </html>
-
